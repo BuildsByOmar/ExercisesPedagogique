@@ -1,4 +1,6 @@
 <script>
+  import { goto } from "$app/navigation"; // Import pour naviguer entre les pages
+
   // Liste des mots à glisser
   let solutions = ["variable", "fonction", "boucle"];
 
@@ -23,9 +25,14 @@
 
   // Valide les réponses en comparant userInput à correctAnswer
   function validateAnswers() {
-    blanks.forEach(blank => {
+    blanks.forEach((blank) => {
       blank.isCorrect = blank.userInput === blank.correctAnswer; // Vrai si correct
     });
+  }
+
+  // Redirige vers la page 2
+  function navigateToPage2() {
+    goto("/page2");
   }
 </script>
 
@@ -64,6 +71,21 @@
   .container {
     font-family: monospace;
     font-size: 16px;
+  }
+
+  /* Style pour le bouton */
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #45a049;
   }
 </style>
 
@@ -143,4 +165,7 @@
 
   <!-- Bouton pour valider les réponses -->
   <button on:click={validateAnswers} tabindex="0">Valider</button>
+
+  <!-- Bouton pour naviguer vers la page 2 -->
+  <button on:click={navigateToPage2} tabindex="0">Aller à l'exercice suivant</button>
 </div>
