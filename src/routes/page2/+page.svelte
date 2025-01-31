@@ -1,59 +1,65 @@
 <script>
-  // liste des éléments à associer
+  // liste des items à associer
   let items = [
-    { name: "Variable", selected: false, associatedIndex: null },
-    { name: "Fonction", selected: false, associatedIndex: null }
+    { name: "Variable", color: "#FF6347", selected: false, associatedIndex: null },
+    { name: "Fonction", color: "#4682B4", selected: false, associatedIndex: null }
   ];
 
   // liste des descriptions à associer
   let descriptions = [
-    { text: "Stocke des données", selected: false, associatedIndex: null },
-    { text: "Exécute une tâche", selected: false, associatedIndex: null }
+    { text: "Une sorte de conteneur pour stocker des données.", selected: false, associatedIndex: null, color: null },
+    { text: "Un bloc de code qui peut être appelé pour effectuer une tâche spécifique.", selected: false, associatedIndex: null, color: null }
   ];
 
-  // vaariable pour vérifier si toutes les associations sont faites
+  // état de validattion (true si toutes les associations sont faites)
   let isValid = false;
 
-  // vérifie si toutes les associations sont complètes
+  // vérifier l'état de validité
   function checkValidState() {
-    isValid = items.every(item => item.associatedIndex !== null);
+    isValid = items.every(function(item) {
+      return item.associatedIndex !== null;
+    });
   }
 
-  // sélectione un élément et gère la désélection
+  // sélectionner un item
   function selectItem(index) {
     items[index].selected = !items[index].selected;
+
+    // si on désélectionne un item, dissocier sa description associée
     if (!items[index].selected) {
-      let descIndex = items[index].associatedIndex;
+      var descIndex = items[index].associatedIndex;
       if (descIndex !== null) {
         descriptions[descIndex].selected = false;
         descriptions[descIndex].associatedIndex = null;
+        descriptions[descIndex].color = null;
         items[index].associatedIndex = null;
       }
     }
     checkValidState();
   }
 
-  // sélectionne une description et l'associe à un élément sélectionné
+  // sélectionner une description
   function selectDescription(index) {
-    let selectedItem = items.find(item => item.selected && item.associatedIndex === null);
+    var selectedItem = items.find(function(item) {
+      return item.selected && item.associatedIndex === null;
+    });
     if (selectedItem) {
       selectedItem.associatedIndex = index;
       descriptions[index].associatedIndex = items.indexOf(selectedItem);
       descriptions[index].selected = true;
-      selectedItem.selected = false;
+      descriptions[index].color = selectedItem.color;
+      selectedItem.selected = false; // =désélectionner l'item après association
     }
     checkValidState();
   }
 
-  // réinitialise toutes les sélections
+  // réinitialiser les sélections
   function deselectItems() {
-    items.forEach(item => {
-      item.selected = false;
-      item.associatedIndex = null;
+    items = items.map(function(item) {
+      return { ...item, selected: false, associatedIndex: null };
     });
-    descriptions.forEach(desc => {
-      desc.selected = false;
-      desc.associatedIndex = null;
+    descriptions = descriptions.map(function(desc) {
+      return { ...desc, selected: false, associatedIndex: null, color: null };
     });
     isValid = false;
   }
@@ -61,16 +67,24 @@
 
 <div class="flex justify-around p-5">
   <div class="flex flex-col gap-2">
-    {#each items as { name, selected }, index}
-      <button class="px-4 py-2 bg-blue-500 text-white rounded" on:click={() => selectItem(index)}>
+    {#each items as { name, color, selected }, index}
+      <button
+        class="px-4 py-2 text-white font-bold rounded shadow transition transform hover:scale-105"
+        style="background-color: {color}; border: {selected ? '3px solid black' : '2px solid #ddd'}"
+        on:click={() => selectItem(index)}
+      >
         {name}
       </button>
     {/each}
   </div>
 
   <div class="flex flex-col gap-2">
-    {#each descriptions as { text, selected }, index}
-      <button class="px-4 py-2 bg-gray-200 rounded" on:click={() => selectDescription(index)}>
+    {#each descriptions as { text, selected, associatedIndex, color }, index}
+      <button
+        class="px-4 py-2 font-bold rounded shadow transition transform hover:scale-105"
+        style="background-color: {color ? color : 'white'}; color: {color ? 'white' : 'black'}; border: {color ? '3px solid black' : '2px solid #ddd'}"
+        on:click={() => selectDescription(index)}
+      >
         {text}
       </button>
     {/each}
@@ -78,6 +92,6 @@
 </div>
 
 <div class="text-center mt-5">
-  <button class="px-4 py-2 bg-gray-400 text-white rounded" on:click={() => deselectItems()} disabled={!isValid}>Réinitialiser</button>
-  <button class="px-4 py-2 bg-green-500 text-white rounded" disabled={!isValid}>Valider</button>
+  <button class="px-4 py-2 bg-gray-400 text-white font-bold rounded shadow transition transform hover:scale-105 disabled:opacity-50" on:click={() => deselectItems()} disabled={!isValid}>Réinitialiser</button>
+  <button class="px-4 py-2 bg-green-500 text-white font-bold rounded shadow transition transform hover:scale-105 disabled:opacity-50" disabled={!isValid}>Valider</button>
 </div>
