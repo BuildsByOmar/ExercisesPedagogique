@@ -1,145 +1,195 @@
 <script>
-  // Liste des éléments à associer
-  let items = [
-    { name: "Variable", color: "#FF6347", selected: false, associatedIndex: null },
-    { name: "Fonction", color: "#4682B4", selected: false, associatedIndex: null }
+  // Données initiales des items et descriptions
+  const originalItems = [
+    { id: 1, label: "Variable", correctDescription: 2 },
+    { id: 2, label: "Fonction", correctDescription: 1 },
+    { id: 3, label: "Boucle", correctDescription: 3 }
   ];
 
-  // Liste des descriptions à associer
-  let descriptions = [
-    { text: "Une sorte de conteneur pour stocker des données.", selected: false, associatedIndex: null, color: null },
-    { text: "Un bloc de code qui peut être appelé pour effectuer une tâche spécifique.", selected: false, associatedIndex: null, color: null }
+  const originalDescriptions = [
+    { id: 1, label: "Bloc de code réutilisable" },
+    { id: 2, label: "Conteneur de données" },
+    { id: 3, label: "Répéter une action" }
   ];
 
-  let isValid = false;
-  let isSelectionActive = false;
-  let selectionType = null;
+  let items = [...originalItems];  // Copie des items
+  let descriptions = [...originalDescriptions];  // Copie des descriptions
+  let associations = [];  // Liste des associations
+  let selectedItem = null, selectedDescription = null;  // Sélection en cours
+  let validated = false, score = 0;  // Validation et score
 
-  function checkValidState() {
-    isValid = items.every(item => item.associatedIndex !== null);
+  // Sélectionner un item
+  function selectItem(item) {
+    if (validated) return;
+    selectedItem = selectedItem && selectedItem.id === item.id ? null : item;
   }
 
-  function selectItem(index) {
-    if (items[index].associatedIndex !== null) {
-      const descIndex = items[index].associatedIndex;
-      descriptions[descIndex].associatedIndex = null;
-      descriptions[descIndex].color = null;
-      descriptions[descIndex].selected = false;
-      items[index].associatedIndex = null;
-      items[index].selected = false;
-      isSelectionActive = false;
-      selectionType = null;
-      checkValidState();
+  // Sélectionner une description
+  function selectDescription(description) {
+    if (validated) return;
+    selectedDescription = selectedDescription && selectedDescription.id === description.id ? null : description;
+  }
+
+  // Ajouter une association
+  function addAssociation() {
+    if (selectedItem && selectedDescription) {
+      associations = [...associations, { item: selectedItem, description: selectedDescription }];
+      items = items.filter(i => i.id !== selectedItem.id);
+      descriptions = descriptions.filter(d => d.id !== selectedDescription.id);
+      selectedItem = selectedDescription = null;
+    }
+  }
+
+  // Dissocier une association
+  function dissociate(assocToRemove) {
+    if (validated) return;
+    associations = associations.filter(assoc => assoc !== assocToRemove);
+    items = [...items, assocToRemove.item];
+    descriptions = [...descriptions, assocToRemove.description];
+    items.sort((a, b) => a.id - b.id);
+    descriptions.sort((a, b) => a.id - b.id);
+  }
+
+  // Valider les associations et calculer le score
+  function validateAssociations() {
+    if (associations.length !== originalItems.length) {
+      alert("Veuillez associer tous les éléments avant de valider !");
       return;
     }
-
-    const selectedDescIndex = descriptions.findIndex(desc => desc.selected);
-    if (selectedDescIndex !== -1) {
-      createAssociation(index, selectedDescIndex);
-      return;
-    }
-
-    const newSelectedState = !items[index].selected;
-    isSelectionActive = newSelectedState;
-    selectionType = newSelectedState ? 'item' : null;
-
-    items = items.map((item, i) => ({
-      ...item,
-      selected: i === index ? newSelectedState : false
-    }));
+    score = associations.reduce((acc, assoc) => {
+      const correctDescriptionId = assoc.item.correctDescription;
+      assoc.isCorrect = assoc.description.id === correctDescriptionId;
+      return acc + (assoc.isCorrect ? 1 : 0);
+    }, 0);
+    validated = true;
   }
 
-  function selectDescription(index) {
-    if (descriptions[index].associatedIndex !== null) return;
-
-    const selectedItemIndex = items.findIndex(item => item.selected);
-    if (selectedItemIndex !== -1) {
-      createAssociation(selectedItemIndex, index);
-      return;
-    }
-
-    const newSelectedState = !descriptions[index].selected;
-    isSelectionActive = newSelectedState;
-    selectionType = newSelectedState ? 'description' : null;
-
-    descriptions = descriptions.map((desc, i) => ({
-      ...desc,
-      selected: i === index ? newSelectedState : false
-    }));
-  }
-
-  function createAssociation(itemIndex, descriptionIndex) {
-    descriptions[descriptionIndex].associatedIndex = itemIndex;
-    descriptions[descriptionIndex].color = items[itemIndex].color;
-    descriptions[descriptionIndex].selected = false;
-    items[itemIndex].associatedIndex = descriptionIndex;
-    items[itemIndex].selected = false;
-    isSelectionActive = false;
-    selectionType = null;
-    checkValidState();
-  }
-
-  function deselectItems() {
-    items = items.map(item => ({
-      ...item,
-      selected: false,
-      associatedIndex: null
-    }));
-    
-    descriptions = descriptions.map(desc => ({
-      ...desc,
-      selected: false,
-      associatedIndex: null,
-      color: null
-    }));
-    
-    isValid = false;
-    isSelectionActive = false;
-    selectionType = null;
+  // Réinitialiser le jeu
+  function resetGame() {
+    items = [...originalItems];
+    descriptions = [...originalDescriptions];
+    associations = [];
+    selectedItem = selectedDescription = null;
+    score = 0;
+    validated = false;
   }
 </script>
 
-<div class="flex justify-around p-5">
-  <div class="flex flex-col gap-2">
-    {#each items as { name, color, selected, associatedIndex }, index}
-      {@const isDisabled = isSelectionActive && selectionType === 'item' && !selected && associatedIndex === null}
-      <button
-        class="px-4 py-2 text-white font-bold rounded shadow transition transform hover:scale-105 disabled:opacity-50 {isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}"
-        style="background-color: {color}; border: {selected ? '3px solid black' : '2px solid #ddd'}"
-        on:click={() => selectItem(index)}
-        disabled={isDisabled}
-      >
-        {name}
-      </button>
-    {/each}
+<!-- Interface utilisateur -->
+<div class="max-w-4xl mx-auto p-6 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-2xl rounded-3xl">
+  <h1 class="text-4xl font-extrabold mb-8 text-center text-indigo-700">Jeu d'Association</h1>
+  
+  <!-- Items et Descriptions -->
+  <div class="flex flex-col md:flex-row md:space-x-6">
+    <div class="md:w-1/2 mb-6 md:mb-0">
+      <h2 class="text-2xl font-bold mb-4 text-blue-700 text-center">Items</h2>
+      <ul class="space-y-4">
+        {#each items as item}
+          <li>
+            <button
+              type="button"
+              class="w-full text-left p-4 border rounded-lg transition-all duration-300
+                {selectedItem && selectedItem.id === item.id ? 'bg-blue-300 border-blue-500' : 'hover:bg-blue-200'}
+                {selectedItem && selectedItem.id !== item.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}"
+              on:click={() => !selectedItem || selectedItem.id === item.id ? selectItem(item) : null}
+              disabled={selectedItem && selectedItem.id !== item.id}>
+              {item.label}
+            </button>
+          </li>
+        {/each}
+      </ul>
+    </div>
+   
+    <div class="md:w-1/2">
+      <h2 class="text-2xl font-bold mb-4 text-green-700 text-center">Descriptions</h2>
+      <ul class="space-y-4">
+        {#each descriptions as description}
+          <li>
+            <button
+              type="button"
+              class="w-full text-left p-4 border rounded-lg transition-all duration-300
+                {selectedDescription && selectedDescription.id === description.id ? 'bg-green-300 border-green-500' : 'hover:bg-green-200'}
+                {selectedDescription && selectedDescription.id !== description.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}"
+              on:click={() => !selectedDescription || selectedDescription.id === description.id ? selectDescription(description) : null}
+              disabled={selectedDescription && selectedDescription.id !== description.id}>
+              {description.label}
+            </button>
+          </li>
+        {/each}
+      </ul>     
+    </div>
+  </div>
+  
+  <!-- Bouton pour Associer -->
+  <div class="mt-6 flex justify-center">
+    <button 
+      class="px-6 py-3 bg-indigo-500 text-white rounded-lg shadow-lg hover:bg-indigo-600 transition-all duration-300
+      disabled:opacity-50 disabled:cursor-not-allowed"
+      on:click={addAssociation}
+      disabled={!selectedItem || !selectedDescription || validated}>
+      Associer
+    </button>
   </div>
 
-  <div class="flex flex-col gap-2">
-    {#each descriptions as { text, selected, associatedIndex, color }, index}
-      {@const isDisabled = isSelectionActive && selectionType === 'description' && !selected && associatedIndex === null}
-      <button
-        class="px-4 py-2 font-bold rounded shadow transition transform hover:scale-105 disabled:opacity-50 {isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}"
-        style="background-color: {color ? color : 'white'}; color: {color ? 'white' : 'black'}; border: {selected ? '3px solid black' : '2px solid #ddd'}"
-        on:click={() => selectDescription(index)}
-        disabled={isDisabled}
-      >
-        {text}
-      </button>
-    {/each}
+  <!-- Affichage des Associations -->
+  <div class="mt-8">
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">Associations Réalisées</h2>
+    {#if associations.length > 0}
+      <ul class="space-y-4">
+        {#each associations as assoc}
+          <li class="p-4 border rounded-lg flex justify-between items-center shadow-lg
+              {validated
+                ? (assoc.isCorrect ? 'bg-green-200 border-green-500' : 'bg-red-200 border-red-500')
+                : 'bg-gray-200 border-gray-400'}">
+            <span class="font-semibold">{assoc.item.label} ➡ {assoc.description.label}</span>
+            {#if !validated}
+              <button 
+                class="text-red-500 hover:text-red-700 ml-4 font-medium"
+                on:click={() => dissociate(assoc)}>
+                Dissocier
+              </button>
+            {/if}
+            {#if validated}
+              <span class="font-bold text-lg">
+                {assoc.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+              </span>
+            {/if}
+          </li>
+        {/each}
+      </ul>
+    {:else}
+      <p class="text-gray-500 italic">Aucune association réalisée pour l'instant.</p>
+    {/if}
   </div>
-</div>
 
-<div class="text-center mt-5">
-  <button 
-    class="px-4 py-2 bg-gray-400 text-white font-bold rounded shadow transition transform hover:scale-105 disabled:opacity-50" 
-    on:click={deselectItems}
-  >
-    Réinitialiser
-  </button>
-  <button 
-    class="px-4 py-2 bg-green-500 text-white font-bold rounded shadow transition transform hover:scale-105 disabled:opacity-50 cursor-not-allowed" 
-    disabled={!isValid}
-  >
-    Valider
-  </button>
+  <!-- Boutons pour Valider et Réinitialiser -->
+  <div class="mt-8 flex justify-center space-x-6">
+    {#if !validated}
+      <button 
+        class="px-6 py-3 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transition-all duration-300
+        disabled:opacity-50 disabled:cursor-not-allowed"
+        class:cursor-not-allowed={associations.length !== originalItems.length}
+        on:click={validateAssociations}
+        disabled={associations.length !== originalItems.length}>
+        Valider
+      </button>
+    {/if}
+    <button 
+      class="px-6 py-3 bg-gray-500 text-white rounded-lg shadow-lg hover:bg-gray-600 transition-all duration-300"
+      on:click={resetGame}>
+      Réinitialiser
+    </button>
+  </div>
+
+  <!-- Affichage du Score -->
+  {#if validated}
+    <div class="mt-8 text-center">
+      <h2 class="text-3xl font-extrabold text-indigo-700">Score : {score} / {originalItems.length}</h2>
+      {#if score === originalItems.length}
+        <p class="text-green-600 mt-4 font-semibold text-lg">🎉 Bravo ! Toutes les associations sont correctes !</p>
+      {:else}
+        <p class="text-red-600 mt-4 font-semibold text-lg">Certaines associations sont incorrectes. Revoyez vos réponses !</p>
+      {/if}
+    </div>
+  {/if}
 </div>
