@@ -1,38 +1,63 @@
-# sv
+# E-Learning App
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Une application web d'e-learning développée avec [SvelteKit](https://kit.svelte.dev/).  
+Elle propose trois exercices interactifs pour aider à l'apprentissage de concepts variés.
 
-## Creating a project
+## 📂 Architecture du projet
 
-If you're seeing this, you've probably already done this step. Congrats!
+L'application est structurée en trois modules principaux, chacun correspondant à un exercice :
+
+- **`src/complete-words/`** : Exercice où l'utilisateur doit compléter des mots.  
+- **`src/link-elements/`** : Exercice où il faut associer des éléments entre eux.  
+- **`src/categories/`** : Exercice où il faut classer des mots dans les bonnes catégories.  
+
+Chaque module contient :
+- Une page principale pour l'exercice.
+- Un dossier `components/` contenant les composants spécifiques à cet exercice.
+
+## 🚀 Installation et développement
+
+### 1️⃣ Cloner le projet
 
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+git clone <URL_DU_REPO>
+cd e-learning-app
 ```
 
-## Developing
+### 2️⃣ Installer les dépendances
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+```bash
+npm install
+```
+
+### 3️⃣ Lancer le serveur de développement
 
 ```bash
 npm run dev
 
-# or start the server and open the app in a new browser tab
+# ou pour ouvrir directement dans le navigateur :
 npm run dev -- --open
 ```
 
-## Building
+## 🏗️ Build et déploiement
 
-To create a production version of your app:
+Pour générer une version optimisée de l'application :
 
 ```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+Tu peux prévisualiser le build avec :
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```bash
+npm run preview
+```
+
+> Pour le déploiement, installe l'[adapter](https://kit.svelte.dev/docs/adapters) adapté à ton hébergement.
+
+## ✨ Fonctionnalités
+
+- 🌍 Application web interactive et intuitive.
+- 🎯 Trois types d'exercices pour renforcer l'apprentissage.
+- 📊 Suivi du score et feedback instantané.
+- 📱 Responsive et compatible avec les mobiles.
