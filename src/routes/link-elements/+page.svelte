@@ -1,5 +1,6 @@
 <script>
   // Importation des composants nécessaires
+  import { goto } from "$app/navigation";
   import ItemsList from './components/ItemsList.svelte';
   import DescriptionsList from './components/DescriptionsList.svelte';
   import AssociationsList from './components/AssociationsList.svelte';
@@ -99,6 +100,11 @@
     score = 0; 
     validated = false; 
   }
+
+  function goToNextExercise() {
+    goto("/categories");
+  }
+
 </script>
 
 <!-- Conteneur principal de l'application -->
@@ -129,7 +135,8 @@
       {originalItems}
       on:addAssociation={addAssociation}
       on:validateAssociations={validateAssociations}
-      on:resetGame={resetGame} />
+      on:resetGame={resetGame}
+      on:nextExercise={goToNextExercise} />
   </div>
 
   <!-- Liste des associations faites -->

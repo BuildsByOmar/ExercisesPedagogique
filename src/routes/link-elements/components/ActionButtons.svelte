@@ -1,5 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte';
+  import { goto } from '$app/navigation';
+  
   export let selectedItem;
   export let selectedDescription;
   export let validated;
@@ -20,7 +22,11 @@
   }
 
   function goBack() {
-    window.history.back();  // Revenir à la page précédente
+    goto("/");  // Revenir à la page précédente
+  }
+
+  function goToNextExercise() {
+    dispatch('nextExercise');
   }
 </script>
 
@@ -54,10 +60,17 @@
     🔄 Réinitialiser
   </button>
 
-  <!-- Bouton Retour -->
   <button 
-    class="px-8 py-3 text-lg font-semibold rounded-lg shadow-md bg-blue-400 text-gray-600 hover:bg-blue-500"
+    class="px-8 py-3 text-lg bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition-all"
     on:click={goBack}>
     ↩️ Retour
   </button>
+
+  <button
+    on:click={goToNextExercise}
+    aria-label="Exercice suivant"
+    class="px-8 py-3 text-lg bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition-all">
+    ⏭️ Exercice Suivant
+  </button>
+
 </div>
